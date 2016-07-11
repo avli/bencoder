@@ -1,0 +1,19 @@
+{
+  "name": "bencoder",
+  "version": "0.0.1",
+  "description": "bencode encoder/decoder written in TypeScript",
+  "main": "bencoder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "torrent",
+    "bittorrent",
+    "bencoding",
+    "bencode",
+    "bdecode",
+    "typescript"
+  ],
+  "author": "Andrey Lisin",
+  "license": "MIT"
+}
