@@ -1,11 +1,13 @@
 'use strict';
 
+import {Buffer} from 'buffer';
+
+/*
+Encoding
+*/
+
 function encodeString(s: string): string {
     return s.length + ':' + s;
-}
-
-function decodeString(data: string): string {
-    return ''; 
 }
 
 function encodeInteger(i: number): string {
@@ -15,7 +17,7 @@ function encodeInteger(i: number): string {
 function encodeArray(l: Array<any>): string {
     let result = 'l';
     l.forEach(element => {
-        result += encode(element)
+        result += _encode(element)
     });
     return result + 'e';
 }
@@ -24,7 +26,7 @@ function encodeDict(d: any): string {
     let result = 'd';
     let keys = Object.keys(d).sort();
     keys.forEach(k => {
-        result += (encodeString(k) + encode(d[k]));
+        result += (encodeString(k) + _encode(d[k]));
     });
     return result + 'e';
 }
@@ -36,7 +38,7 @@ function isArray(obj: any): boolean {
     return false;
 }
 
-export function encode(data: any): string {
+function _encode(data: any): string {
     switch (typeof data) {
         case 'string':
             return encodeString(data);
@@ -49,5 +51,30 @@ export function encode(data: any): string {
             else {
                 return encodeDict(data);
             }
+    }
+}
+
+export function encode(data: string): Buffer {
+    return new Buffer(_encode(data));
+}
+
+/*
+Decoding
+*/
+
+function decodeString(data: string): string {
+    let m = data.match(/^(d+)\:(.+)/);
+    return m ? m[2] : '';
+}
+
+export function decode(data: Buffer, encoding?: string): any {
+    let s = data.toString(encoding || null);
+
+    if (!s) return null;
+
+    let firstChar: string = s[0];
+
+    for(let i = 0; i < s.length; i++) {
+        ;
     }
 }
