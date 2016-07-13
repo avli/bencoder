@@ -153,19 +153,22 @@ function encodesDigit(x: number) {
 }
 
 function _decode(data: Buffer): any {
-    let result = null;
+    // let result = null;
     let rest = data;
     let value = null;
     while (rest) {
         let firstByte = rest[0];
         if (firstByte === Delimeters.i) {
-            return decodeInteger(data).value;
+            ({value, rest} = decodeInteger(data));
         }
         else if (encodesDigit(firstByte)) {
             return decodeString(data);
         }
         else if (firstByte === Delimeters.l) {
             ({value, rest} = decodeList(data));
+        }
+        else {
+            throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
         }
     }
 }
