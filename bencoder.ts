@@ -61,6 +61,13 @@ function _encode(data: any): Buffer {
     }
 }
 
+
+/**
+ * Encodes data in bencode.
+ *
+ * @param {Array|String|Object|Number} data
+ * @return {Buffer}
+ */
 export function encode(data: string): Buffer {
     return new Buffer(_encode(data));
 }
@@ -211,6 +218,13 @@ function _decode(data: Buffer): any {
     // return value;
 }
 
+/**
+ * Decodes bencoded data.
+ *
+ * @param {Buffer} data
+ * @param {String} encoding (optional)
+ * @return {Object|Array|String|Number}
+ */
 export function decode(data: Buffer, encoding?: string): any {
     return _decode(data).value;
 }
