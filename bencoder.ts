@@ -7,7 +7,11 @@ Encoding
 */
 
 function encodeString(s: string): Buffer {
-    return Buffer.from(`${s.length}:${s}`);
+    let bytes = Buffer.from(s);
+    return Buffer.concat([
+        Buffer.from(bytes.length.toString()), 
+        Buffer.from(':'), 
+        bytes]);  
 }
 
 function encodeInteger(i: number): Buffer {
@@ -65,19 +69,50 @@ export function encode(data: string): Buffer {
 Decoding
 */
 
-function decodeString(data: string): string {
-    let m = data.match(/^(d+)\:(.+)/);
-    return m ? m[2] : '';
+export function decodeString(data: Buffer, encoding?: string): string {
+    let firstColonIndex = null;
+    for(let i = 0; i < data.length; i++) {
+        if (data[i] === 0x3a) {
+            firstColonIndex = i;
+            break;
+        }
+    }
+
+    // TODO: Make the message more meaningful.
+    if (!firstColonIndex) {
+        throw "Invalid data. Missing colon.";
+    }
+
+    let expectedLength = parseInt(data.slice(0,firstColonIndex).toString());
+    let value = data.slice(firstColonIndex + 1, data.length);
+
+    // TODO: Make the message more meaningful.
+    if (expectedLength !== value.length) {
+        throw "Invalid data. String length is not equal the expected one.";
+    }
+    else {
+        return value.toString(encoding);
+    }
+}
+
+export function decodeInteger(data: Buffer): number {
+    let value = data.slice(1, data.length - 1);
+    return parseInt(value.toString());
+}
+
+function encodesDigit(x: number) {
+    return (x >= 0x30) && (x <= 0x39);
 }
 
 export function decode(data: Buffer, encoding?: string): any {
-    let s = data.toString(encoding || null);
-
-    if (!s) return null;
-
-    let firstChar: string = s[0];
-
-    for(let i = 0; i < s.length; i++) {
-        ;
-    }
+    let result = null;
+    data.forEach(x => {
+        if (x === 0x69) { // i
+            result = decodeInteger(data);
+        }
+        else if (encodesDigit(x)) {
+            result = decodeString(data);      
+        }
+    });
+    return result;
 }
