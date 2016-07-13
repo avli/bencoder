@@ -9,9 +9,9 @@ Encoding
 function encodeString(s: string): Buffer {
     let bytes = Buffer.from(s);
     return Buffer.concat([
-        Buffer.from(bytes.length.toString()), 
-        Buffer.from(':'), 
-        bytes]);  
+        Buffer.from(bytes.length.toString()),
+        Buffer.from(':'),
+        bytes]);
 }
 
 function encodeInteger(i: number): Buffer {
@@ -114,7 +114,7 @@ export function decodeInteger(data: Buffer): DecodingResult {
         if (data[i] === Delimeters.e) {
             endIndex = i;
             break;
-        } 
+        }
     }
 
     if (!endIndex) {
@@ -127,42 +127,65 @@ export function decodeInteger(data: Buffer): DecodingResult {
     }
 }
 
-export function decodeList(data: Buffer): Array<any> {
+export function decodeList(data: Buffer): DecodingResult {
     // TODO: Check for 'e' symbol in the end.
     let result = [];
-    data.slice(1, data.length - 1).forEach(x => {
-        if (x === Delimeters.i) { // i
-            result.push(decodeInteger(data));
+    let rest = data.slice(1); // l...
+    let value = null;
+
+    while (rest) {
+        let firstByte = rest[0];
+        if (firstByte === Delimeters.i) { // i
+            ({value, rest} = decodeInteger(rest));
+            result.push(value);
         }
-        else if (encodesDigit(x)) {
-            result.push(decodeString(data));      
+        if (firstByte === Delimeters.e) { // end of the list
+            rest = rest.slice(1);
+            break;
         }
-    });
-    return result;
+    }
+
+    return {value: result, rest: rest};
 }
 
 function encodesDigit(x: number) {
     return (x >= 0x30) && (x <= 0x39);
 }
 
-export function decode(data: Buffer, encoding?: string): any {
+function _decode(data: Buffer): any {
     let result = null;
     let rest = data;
     let value = null;
     while (rest) {
-        data.forEach(x => {
-            if (x === Delimeters.i) {
-                ({value, rest} = decodeInteger(data));
-            }
-            else if (encodesDigit(x)) {
-                result = decodeString(data);      
-            }
-            else if (x === Delimeters.l) {
-                result = decodeList(data);
-            }
-        });
+        let firstByte = rest[0];
+        if (firstByte === Delimeters.i) {
+            return decodeInteger(data).value;
+        }
+        else if (encodesDigit(firstByte)) {
+            return decodeString(data);
+        }
+        else if (firstByte === Delimeters.l) {
+            ({value, rest} = decodeList(data));
+        }
     }
+}
+
+export function decode(data: Buffer, encoding?: string): any {
     // let result = null;
- 
-    // return result;
+    // let rest = data;
+    // let value = null;
+    // while (rest) {
+    //     let firstByte = rest[0];
+    //     if (firstByte === Delimeters.i) {
+    //         return decodeInteger(data).value;
+    //     }
+    //     else if (encodesDigit(firstByte)) {
+    //         result = decodeString(data);
+    //     }
+    //     else if (firstByte === Delimeters.l) {
+    //         result = decodeList(data);
+    //         rest = null;
+    //     }
+    // }
+    return _decode(data);
 }

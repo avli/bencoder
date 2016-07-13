@@ -110,40 +110,62 @@ exports.decodeInteger = decodeInteger;
 function decodeList(data) {
     // TODO: Check for 'e' symbol in the end.
     var result = [];
-    data.slice(1, data.length - 1).forEach(function (x) {
-        if (x === Delimeters.i) {
-            result.push(decodeInteger(data));
+    var rest = data.slice(1); // l...
+    var value = null;
+    while (rest) {
+        var firstByte = rest[0];
+        if (firstByte === Delimeters.i) {
+            (_a = decodeInteger(rest), value = _a.value, rest = _a.rest, _a);
+            result.push(value);
         }
-        else if (encodesDigit(x)) {
-            result.push(decodeString(data));
+        if (firstByte === Delimeters.e) {
+            rest = rest.slice(1);
+            break;
         }
-    });
-    return result;
+    }
+    return { value: result, rest: rest };
+    var _a;
 }
 exports.decodeList = decodeList;
 function encodesDigit(x) {
     return (x >= 0x30) && (x <= 0x39);
 }
-function decode(data, encoding) {
+function _decode(data) {
     var result = null;
     var rest = data;
     var value = null;
     while (rest) {
-        data.forEach(function (x) {
-            if (x === Delimeters.i) {
-                (_a = decodeInteger(data), value = _a.value, rest = _a.rest, _a);
-            }
-            else if (encodesDigit(x)) {
-                result = decodeString(data);
-            }
-            else if (x === Delimeters.l) {
-                result = decodeList(data);
-            }
-            var _a;
-        });
+        var firstByte = rest[0];
+        if (firstByte === Delimeters.i) {
+            return decodeInteger(data).value;
+        }
+        else if (encodesDigit(firstByte)) {
+            return decodeString(data);
+        }
+        else if (firstByte === Delimeters.l) {
+            (_a = decodeList(data), value = _a.value, rest = _a.rest, _a);
+        }
     }
+    var _a;
+}
+function decode(data, encoding) {
     // let result = null;
-    // return result;
+    // let rest = data;
+    // let value = null;
+    // while (rest) {
+    //     let firstByte = rest[0];
+    //     if (firstByte === Delimeters.i) {
+    //         return decodeInteger(data).value;
+    //     }
+    //     else if (encodesDigit(firstByte)) {
+    //         result = decodeString(data);
+    //     }
+    //     else if (firstByte === Delimeters.l) {
+    //         result = decodeList(data);
+    //         rest = null;
+    //     }
+    // }
+    return _decode(data);
 }
 exports.decode = decode;
 //# sourceMappingURL=bencoder.js.map
