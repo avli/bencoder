@@ -163,17 +163,23 @@ export function decodeList(data: Buffer): DecodingResult {
     return {value: result, rest: rest};
 }
 
-// export function decodeDict(data: Buffer): DecodingResult {
-//     let result = {};
-//     let rest = data.slice(1); // d...
-//     let value = null;
-//     let key: string;
+export function decodeDict(data: Buffer): DecodingResult {
+    let result = {};
+    let rest = data.slice(1); // d...
+    let value = null;
+    let key: string;
 
-//     while (rest) {
-//         ({value: key, rest} = decodeString(rest));
-//         let v = _decode(rest);
-//     }
-// }
+    while (rest.length !== 0) {
+        console.log(rest.toString());
+        let firstByte = rest[0];
+        if (firstByte === Delimeters.e) break;
+        ({value: key, rest} = decodeString(rest));
+        ({value, rest} = _decode(rest));
+        result[key] = value;
+    }
+
+    return {value: result, rest: rest}
+}
 
 function encodesDigit(x: number) {
     return (x >= 0x30) && (x <= 0x39);
@@ -192,30 +198,9 @@ function _decode(data: Buffer): any {
     else if (firstByte === Delimeters.l) {
         return decodeList(data);
     }
-    // let rest = data;
-    // let value = null;
-    // while (rest) {
-    //     let firstByte = rest[0];
-    //     if (firstByte === Delimeters.i) {
-    //         ({value, rest} = decodeInteger(data));
-    //         if ((topLevel) && (rest.length !== 0)) {
-    //             throw 'Incorrect data. Unexpected continuation.'
-    //         }
-    //     }
-    //     else if (encodesDigit(firstByte)) {
-    //         return decodeString(data);
-    //     }
-    //     else if (firstByte === Delimeters.l) {
-    //         ({value, rest} = decodeList(data));
-    //         if ((topLevel) && (rest.length !== 0)) {
-    //             throw 'Incorrect data. Unexpected continuation.'
-    //         }
-    //     }
-    //     else {
-    //         throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
-    //     }
-    // }
-    // return value;
+    else if (firstByte === Delimeters.d) {
+        return decodeDict(data);
+    }
 }
 
 /**

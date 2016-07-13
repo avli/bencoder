@@ -52,6 +52,12 @@ function _encode(data) {
             }
     }
 }
+/**
+ * Encodes data in bencode.
+ *
+ * @param {Array|String|Object|Number} data
+ * @return {Buffer}
+ */
 function encode(data) {
     return new buffer_1.Buffer(_encode(data));
 }
@@ -135,6 +141,24 @@ function decodeList(data) {
     var _a, _b, _c;
 }
 exports.decodeList = decodeList;
+function decodeDict(data) {
+    var result = {};
+    var rest = data.slice(1); // d...
+    var value = null;
+    var key;
+    while (rest.length !== 0) {
+        console.log(rest.toString());
+        var firstByte = rest[0];
+        if (firstByte === Delimeters.e)
+            break;
+        (_a = decodeString(rest), key = _a.value, rest = _a.rest, _a);
+        (_b = _decode(rest), value = _b.value, rest = _b.rest, _b);
+        result[key] = value;
+    }
+    return { value: result, rest: rest };
+    var _a, _b;
+}
+exports.decodeDict = decodeDict;
 function encodesDigit(x) {
     return (x >= 0x30) && (x <= 0x39);
 }
@@ -151,31 +175,17 @@ function _decode(data) {
     else if (firstByte === Delimeters.l) {
         return decodeList(data);
     }
-    // let rest = data;
-    // let value = null;
-    // while (rest) {
-    //     let firstByte = rest[0];
-    //     if (firstByte === Delimeters.i) {
-    //         ({value, rest} = decodeInteger(data));
-    //         if ((topLevel) && (rest.length !== 0)) {
-    //             throw 'Incorrect data. Unexpected continuation.'
-    //         }
-    //     }
-    //     else if (encodesDigit(firstByte)) {
-    //         return decodeString(data);
-    //     }
-    //     else if (firstByte === Delimeters.l) {
-    //         ({value, rest} = decodeList(data));
-    //         if ((topLevel) && (rest.length !== 0)) {
-    //             throw 'Incorrect data. Unexpected continuation.'
-    //         }
-    //     }
-    //     else {
-    //         throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
-    //     }
-    // }
-    // return value;
+    else if (firstByte === Delimeters.d) {
+        return decodeDict(data);
+    }
 }
+/**
+ * Decodes bencoded data.
+ *
+ * @param {Buffer} data
+ * @param {String} encoding (optional)
+ * @return {Object|Array|String|Number}
+ */
 function decode(data, encoding) {
     return _decode(data).value;
 }
