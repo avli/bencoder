@@ -6,29 +6,32 @@ import {Buffer} from 'buffer';
 Encoding
 */
 
-function encodeString(s: string): string {
-    return s.length + ':' + s;
+function encodeString(s: string): Buffer {
+    return Buffer.from(`${s.length}:${s}`);
 }
 
-function encodeInteger(i: number): string {
-    return 'i' + i + 'e';
+function encodeInteger(i: number): Buffer {
+    return Buffer.from(`i${i}e`);
 }
 
-function encodeArray(l: Array<any>): string {
-    let result = 'l';
+function encodeArray(l: Array<any>): Buffer {
+    let result: Array<Buffer> = [Buffer.from('l')];
     l.forEach(element => {
-        result += _encode(element)
+        result.push(_encode(element));
     });
-    return result + 'e';
+    result.push(Buffer.from('e'))
+    return Buffer.concat(result);
 }
 
-function encodeDict(d: any): string {
-    let result = 'd';
+function encodeDict(d: any): Buffer {
+    let result: Array<Buffer> = [Buffer.from('d')];
     let keys = Object.keys(d).sort();
     keys.forEach(k => {
-        result += (encodeString(k) + _encode(d[k]));
+        result.push(encodeString(k));
+        result.push(encode(d[k]))
     });
-    return result + 'e';
+    result.push(Buffer.from('e'));
+    return Buffer.concat(result);
 }
 
 function isArray(obj: any): boolean {
@@ -38,7 +41,7 @@ function isArray(obj: any): boolean {
     return false;
 }
 
-function _encode(data: any): string {
+function _encode(data: any): Buffer {
     switch (typeof data) {
         case 'string':
             return encodeString(data);
