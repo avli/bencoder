@@ -152,43 +152,33 @@ function encodesDigit(x: number) {
     return (x >= 0x30) && (x <= 0x39);
 }
 
-function _decode(data: Buffer): any {
-    // let result = null;
+function _decode(data: Buffer, topLevel?: boolean): any {
     let rest = data;
     let value = null;
     while (rest) {
         let firstByte = rest[0];
         if (firstByte === Delimeters.i) {
             ({value, rest} = decodeInteger(data));
+            if ((topLevel) && (rest.length !== 0)) {
+                throw 'Incorrect data. Unexpected continuation.'
+            }
         }
         else if (encodesDigit(firstByte)) {
             return decodeString(data);
         }
         else if (firstByte === Delimeters.l) {
             ({value, rest} = decodeList(data));
+            if ((topLevel) && (rest.length !== 0)) {
+                throw 'Incorrect data. Unexpected continuation.'
+            }
         }
         else {
             throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
         }
     }
+    return value;
 }
 
 export function decode(data: Buffer, encoding?: string): any {
-    // let result = null;
-    // let rest = data;
-    // let value = null;
-    // while (rest) {
-    //     let firstByte = rest[0];
-    //     if (firstByte === Delimeters.i) {
-    //         return decodeInteger(data).value;
-    //     }
-    //     else if (encodesDigit(firstByte)) {
-    //         result = decodeString(data);
-    //     }
-    //     else if (firstByte === Delimeters.l) {
-    //         result = decodeList(data);
-    //         rest = null;
-    //     }
-    // }
-    return _decode(data);
+    return _decode(data, true);
 }
