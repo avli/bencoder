@@ -69,10 +69,23 @@ export function encode(data: string): Buffer {
 Decoding
 */
 
+enum Delimeters {
+    i = 0x69,
+    e = 0x65,
+    l = 0x6c,
+    d = 0x64,
+    colon = 0x3a
+}
+
+interface DecodingResult {
+    value: any,
+    rest?: Buffer
+}
+
 export function decodeString(data: Buffer, encoding?: string): string {
     let firstColonIndex = null;
     for(let i = 0; i < data.length; i++) {
-        if (data[i] === 0x3a) {
+        if (data[i] === Delimeters.colon) {
             firstColonIndex = i;
             break;
         }
@@ -95,9 +108,37 @@ export function decodeString(data: Buffer, encoding?: string): string {
     }
 }
 
-export function decodeInteger(data: Buffer): number {
-    let value = data.slice(1, data.length - 1);
-    return parseInt(value.toString());
+export function decodeInteger(data: Buffer): DecodingResult {
+    let endIndex: number = null // The first 'e' symbol index
+    for (let i = 1; i < data.length; i++) {
+        if (data[i] === Delimeters.e) {
+            endIndex = i;
+            break;
+        } 
+    }
+
+    if (!endIndex) {
+        throw "Invalid data. 'e' symbol expected";
+    }
+
+    return {
+        value: parseInt(data.slice(1, endIndex).toString()),
+        rest: data.slice(endIndex + 1)
+    }
+}
+
+export function decodeList(data: Buffer): Array<any> {
+    // TODO: Check for 'e' symbol in the end.
+    let result = [];
+    data.slice(1, data.length - 1).forEach(x => {
+        if (x === Delimeters.i) { // i
+            result.push(decodeInteger(data));
+        }
+        else if (encodesDigit(x)) {
+            result.push(decodeString(data));      
+        }
+    });
+    return result;
 }
 
 function encodesDigit(x: number) {
@@ -106,13 +147,22 @@ function encodesDigit(x: number) {
 
 export function decode(data: Buffer, encoding?: string): any {
     let result = null;
-    data.forEach(x => {
-        if (x === 0x69) { // i
-            result = decodeInteger(data);
-        }
-        else if (encodesDigit(x)) {
-            result = decodeString(data);      
-        }
-    });
-    return result;
+    let rest = data;
+    let value = null;
+    while (rest) {
+        data.forEach(x => {
+            if (x === Delimeters.i) {
+                ({value, rest} = decodeInteger(data));
+            }
+            else if (encodesDigit(x)) {
+                result = decodeString(data);      
+            }
+            else if (x === Delimeters.l) {
+                result = decodeList(data);
+            }
+        });
+    }
+    // let result = null;
+ 
+    // return result;
 }
