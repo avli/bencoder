@@ -82,7 +82,7 @@ interface DecodingResult {
     rest?: Buffer
 }
 
-export function decodeString(data: Buffer, encoding?: string): string {
+export function decodeString(data: Buffer, encoding?: string): DecodingResult {
     let firstColonIndex = null;
     for(let i = 0; i < data.length; i++) {
         if (data[i] === Delimeters.colon) {
@@ -97,14 +97,14 @@ export function decodeString(data: Buffer, encoding?: string): string {
     }
 
     let expectedLength = parseInt(data.slice(0,firstColonIndex).toString());
-    let value = data.slice(firstColonIndex + 1, data.length);
+    let value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
 
     // TODO: Make the message more meaningful.
     if (expectedLength !== value.length) {
         throw "Invalid data. String length is not equal the expected one.";
     }
     else {
-        return value.toString(encoding);
+        return {value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength)}
     }
 }
 
@@ -135,8 +135,16 @@ export function decodeList(data: Buffer): DecodingResult {
 
     while (rest) {
         let firstByte = rest[0];
-        if (firstByte === Delimeters.i) { // i
+        if (firstByte === Delimeters.i) {
             ({value, rest} = decodeInteger(rest));
+            result.push(value);
+        }
+        if (encodesDigit(firstByte)) {
+            ({value, rest} = decodeString(rest));
+            result.push(value);
+        }
+        if (firstByte === Delimeters.l) {
+            ({value, rest} = decodeList(rest));
             result.push(value);
         }
         if (firstByte === Delimeters.e) { // end of the list
@@ -148,37 +156,61 @@ export function decodeList(data: Buffer): DecodingResult {
     return {value: result, rest: rest};
 }
 
+// export function decodeDict(data: Buffer): DecodingResult {
+//     let result = {};
+//     let rest = data.slice(1); // d...
+//     let value = null;
+//     let key: string;
+
+//     while (rest) {
+//         ({value: key, rest} = decodeString(rest));
+//         let v = _decode(rest);
+//     }
+// }
+
 function encodesDigit(x: number) {
     return (x >= 0x30) && (x <= 0x39);
 }
 
-function _decode(data: Buffer, topLevel?: boolean): any {
-    let rest = data;
+function _decode(data: Buffer): any {
     let value = null;
-    while (rest) {
-        let firstByte = rest[0];
-        if (firstByte === Delimeters.i) {
-            ({value, rest} = decodeInteger(data));
-            if ((topLevel) && (rest.length !== 0)) {
-                throw 'Incorrect data. Unexpected continuation.'
-            }
-        }
-        else if (encodesDigit(firstByte)) {
-            return decodeString(data);
-        }
-        else if (firstByte === Delimeters.l) {
-            ({value, rest} = decodeList(data));
-            if ((topLevel) && (rest.length !== 0)) {
-                throw 'Incorrect data. Unexpected continuation.'
-            }
-        }
-        else {
-            throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
-        }
+    let rest = null;
+    let firstByte = data[0];
+    if (firstByte === Delimeters.i) {
+        return decodeInteger(data);
     }
-    return value;
+    if (encodesDigit(firstByte)) {
+        return decodeString(data);
+    }
+    else if (firstByte === Delimeters.l) {
+        return decodeList(data);
+    }
+    // let rest = data;
+    // let value = null;
+    // while (rest) {
+    //     let firstByte = rest[0];
+    //     if (firstByte === Delimeters.i) {
+    //         ({value, rest} = decodeInteger(data));
+    //         if ((topLevel) && (rest.length !== 0)) {
+    //             throw 'Incorrect data. Unexpected continuation.'
+    //         }
+    //     }
+    //     else if (encodesDigit(firstByte)) {
+    //         return decodeString(data);
+    //     }
+    //     else if (firstByte === Delimeters.l) {
+    //         ({value, rest} = decodeList(data));
+    //         if ((topLevel) && (rest.length !== 0)) {
+    //             throw 'Incorrect data. Unexpected continuation.'
+    //         }
+    //     }
+    //     else {
+    //         throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
+    //     }
+    // }
+    // return value;
 }
 
 export function decode(data: Buffer, encoding?: string): any {
-    return _decode(data, true);
+    return _decode(data).value;
 }

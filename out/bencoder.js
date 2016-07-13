@@ -80,13 +80,13 @@ function decodeString(data, encoding) {
         throw "Invalid data. Missing colon.";
     }
     var expectedLength = parseInt(data.slice(0, firstColonIndex).toString());
-    var value = data.slice(firstColonIndex + 1, data.length);
+    var value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
     // TODO: Make the message more meaningful.
     if (expectedLength !== value.length) {
         throw "Invalid data. String length is not equal the expected one.";
     }
     else {
-        return value.toString(encoding);
+        return { value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength) };
     }
 }
 exports.decodeString = decodeString;
@@ -118,54 +118,66 @@ function decodeList(data) {
             (_a = decodeInteger(rest), value = _a.value, rest = _a.rest, _a);
             result.push(value);
         }
+        if (encodesDigit(firstByte)) {
+            (_b = decodeString(rest), value = _b.value, rest = _b.rest, _b);
+            result.push(value);
+        }
+        if (firstByte === Delimeters.l) {
+            (_c = decodeList(rest), value = _c.value, rest = _c.rest, _c);
+            result.push(value);
+        }
         if (firstByte === Delimeters.e) {
             rest = rest.slice(1);
             break;
         }
     }
     return { value: result, rest: rest };
-    var _a;
+    var _a, _b, _c;
 }
 exports.decodeList = decodeList;
 function encodesDigit(x) {
     return (x >= 0x30) && (x <= 0x39);
 }
 function _decode(data) {
-    var result = null;
-    var rest = data;
     var value = null;
-    while (rest) {
-        var firstByte = rest[0];
-        if (firstByte === Delimeters.i) {
-            return decodeInteger(data).value;
-        }
-        else if (encodesDigit(firstByte)) {
-            return decodeString(data);
-        }
-        else if (firstByte === Delimeters.l) {
-            (_a = decodeList(data), value = _a.value, rest = _a.rest, _a);
-        }
+    var rest = null;
+    var firstByte = data[0];
+    if (firstByte === Delimeters.i) {
+        return decodeInteger(data);
     }
-    var _a;
-}
-function decode(data, encoding) {
-    // let result = null;
+    if (encodesDigit(firstByte)) {
+        return decodeString(data);
+    }
+    else if (firstByte === Delimeters.l) {
+        return decodeList(data);
+    }
     // let rest = data;
     // let value = null;
     // while (rest) {
     //     let firstByte = rest[0];
     //     if (firstByte === Delimeters.i) {
-    //         return decodeInteger(data).value;
+    //         ({value, rest} = decodeInteger(data));
+    //         if ((topLevel) && (rest.length !== 0)) {
+    //             throw 'Incorrect data. Unexpected continuation.'
+    //         }
     //     }
     //     else if (encodesDigit(firstByte)) {
-    //         result = decodeString(data);
+    //         return decodeString(data);
     //     }
     //     else if (firstByte === Delimeters.l) {
-    //         result = decodeList(data);
-    //         rest = null;
+    //         ({value, rest} = decodeList(data));
+    //         if ((topLevel) && (rest.length !== 0)) {
+    //             throw 'Incorrect data. Unexpected continuation.'
+    //         }
+    //     }
+    //     else {
+    //         throw `Incorrect data. Expected 'd', 'i', 'l', or digit, got ${rest[0]}.`
     //     }
     // }
-    return _decode(data);
+    // return value;
+}
+function decode(data, encoding) {
+    return _decode(data).value;
 }
 exports.decode = decode;
 //# sourceMappingURL=bencoder.js.map
