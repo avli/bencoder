@@ -149,8 +149,10 @@ function decodeDict(data) {
     while (rest.length !== 0) {
         console.log(rest.toString());
         var firstByte = rest[0];
-        if (firstByte === Delimeters.e)
+        if (firstByte === Delimeters.e) {
+            rest = rest.slice(1);
             break;
+        }
         (_a = decodeString(rest), key = _a.value, rest = _a.rest, _a);
         (_b = _decode(rest), value = _b.value, rest = _b.rest, _b);
         result[key] = value;

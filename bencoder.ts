@@ -172,7 +172,10 @@ export function decodeDict(data: Buffer): DecodingResult {
     while (rest.length !== 0) {
         console.log(rest.toString());
         let firstByte = rest[0];
-        if (firstByte === Delimeters.e) break;
+        if (firstByte === Delimeters.e) {
+            rest = rest.slice(1);
+            break;
+        }
         ({value: key, rest} = decodeString(rest));
         ({value, rest} = _decode(rest));
         result[key] = value;
