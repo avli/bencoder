@@ -1,3 +1,5 @@
+'use strict';
+
 import * as assert from 'assert';
 import {Buffer} from 'buffer';
 import * as bencoder from '../bencoder'
