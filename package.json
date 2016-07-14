@@ -4,7 +4,8 @@
   "description": "bencode encoder/decoder written in TypeScript",
   "main": "./out/bencoder.js",
   "scripts": {
-    "test": "mocha"
+    "pretest": "tsc -p .",
+    "test": "mocha ./out/test"
   },
   "keywords": [
     "torrent",
@@ -17,6 +18,7 @@
   "author": "Andrey Lisin",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "typescript": "^1.8.10"
   }
 }

@@ -68,7 +68,7 @@ function _encode(data: any): Buffer {
  * @param {Array|String|Object|Number} data
  * @return {Buffer}
  */
-export function encode(data: string): Buffer {
+export function encode(data: any): Buffer {
     return new Buffer(_encode(data));
 }
 
