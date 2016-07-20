@@ -20,5 +20,8 @@
   "devDependencies": {
     "mocha": "^2.5.3",
     "typescript": "^1.8.10"
+  },
+  "bugs": {
+    "url": "https://github.com/avli/bencoder/issues"
   }
 }
