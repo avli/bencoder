@@ -132,26 +132,29 @@ export function decodeList(data: Buffer): DecodingResult {
     let rest = data.slice(1); // l...
     let value = null;
 
-    while (rest) {
+    while (true) {
         let firstByte = rest[0];
         if (firstByte === Delimeters.i) {
             ({value, rest} = decodeInteger(rest));
             result.push(value);
+            continue;
         }
         if (encodesDigit(firstByte)) {
             ({value, rest} = decodeString(rest));
             result.push(value);
+            continue;
         }
         if (firstByte === Delimeters.l) {
             ({value, rest} = decodeList(rest));
             result.push(value);
+            continue;
         }
         if (firstByte === Delimeters.e) { // end of the list
             rest = rest.slice(1);
             break;
         }
+        throw new Error(`Expected d, i, l or digit, got ${rest.toString()}`)
     }
-
     return {value: result, rest: rest};
 }
 

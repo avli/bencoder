@@ -46,7 +46,12 @@ describe('bencoder', () => {
             (err) => {
                 return err.message === 'Unexpected continuation: "e"'
             });
-        })
+        });
+        it('should raise exception when decoding "li42e"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from("li42e"))
+            });
+        });
     });
 
     describe('#decodeString()', () => {
