@@ -34,7 +34,7 @@ Bencoder.decode(x1)
 Bencoder.decode(x2)
 42
 Bencoder.decode(x3)
-{ bar: 42, baz: 'foobarbaz', foo: { '0': 1, '1': 2, '2': 3 } }
+{ bar: 42, baz: 'foobarbaz', foo: [ 1, 2, 3 ] }
 
 ```
 
