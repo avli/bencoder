@@ -38,6 +38,14 @@ describe('bencoder', () => {
         });
         it('should decode "li1ei2e5:threee" to [1, 2, "three"]', () => {
             assert.deepEqual([1, 2, "three"], bencoder.decode(Buffer.from("li1ei2e5:threee")));
+        });
+        it('should raise exception when decoding "li42eee"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from("li42eee"))
+            },
+            (err) => {
+                return err.message === 'Unexpected continuation: "e"'
+            });
         })
     });
 

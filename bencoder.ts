@@ -206,5 +206,11 @@ function _decode(data: Buffer): any {
  * @return {Object|Array|String|Number}
  */
 export function decode(data: Buffer, encoding?: string): any {
-    return _decode(data).value;
+    let value: string;
+    let rest: Buffer
+    ({value, rest} = _decode(data));
+    if (rest.length) {
+        throw new Error(`Unexpected continuation: "${rest.toString()}"`)
+    }
+    return value;
 }
