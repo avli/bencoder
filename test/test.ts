@@ -36,15 +36,9 @@ describe('bencoder', () => {
         it('should dencode "3:foo" to "foo"', () => {
             assert.equal('foo', bencoder.decode(Buffer.from('3:foo')).toString());
         });
-        it('should raise exception when decoding "3:foobar"', () => {
-            assert.throws(() => {
-                bencoder.decode(Buffer.from('3:foobar'))
-            }, 
-            Error);
-        });
-        // it('should decode "li1ei2e5:threee" to [1, 2, "three"]', () => {
-        //     assert.equal([1, 2, "three"], bencoder.decode(Buffer.from("li1ei2e5:threee")));
-        // })
+        it('should decode "li1ei2e5:threee" to [1, 2, "three"]', () => {
+            assert.deepEqual([1, 2, "three"], bencoder.decode(Buffer.from("li1ei2e5:threee")));
+        })
     });
 
     describe('#decodeString()', () => {
