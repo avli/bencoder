@@ -38,13 +38,6 @@ function encodeDict(d: any): Buffer {
     return Buffer.concat(result);
 }
 
-function isArray(obj: any): boolean {
-    if (typeof obj === 'object') {
-        return obj.constructor === Array ? true : false;
-    }
-    return false;
-}
-
 function _encode(data: any): Buffer {
     switch (typeof data) {
         case 'string':
@@ -52,7 +45,7 @@ function _encode(data: any): Buffer {
         case 'number':
             return encodeInteger(data);
         case 'object':
-            if (isArray(data)) {
+            if (Array.isArray(data)) {
                 return encodeArray(data);
             }
             else {

@@ -30,8 +30,11 @@ x3.toString()
 // Decode data
 
 Bencoder.decode(x1)
+'foobar'
 Bencoder.decode(x2)
+42
 Bencoder.decode(x3)
+{ bar: 42, baz: 'foobarbaz', foo: { '0': 1, '1': 2, '2': 3 } }
 
 ```
 
