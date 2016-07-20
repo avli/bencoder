@@ -89,7 +89,7 @@ interface DecodingResult {
     rest?: Buffer
 }
 
-export function decodeString(data: Buffer, encoding?: string): DecodingResult {
+function decodeString(data: Buffer, encoding?: string): DecodingResult {
     let firstColonIndex = null;
     for(let i = 0; i < data.length; i++) {
         if (data[i] === Delimeters.colon) {
@@ -107,7 +107,7 @@ export function decodeString(data: Buffer, encoding?: string): DecodingResult {
     return {value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength)}
 }
 
-export function decodeInteger(data: Buffer): DecodingResult {
+function decodeInteger(data: Buffer): DecodingResult {
     let endIndex: number = null // The first 'e' symbol index
     for (let i = 1; i < data.length; i++) {
         if (data[i] === Delimeters.e) {
@@ -126,7 +126,7 @@ export function decodeInteger(data: Buffer): DecodingResult {
     }
 }
 
-export function decodeList(data: Buffer): DecodingResult {
+function decodeList(data: Buffer): DecodingResult {
     // TODO: Check for 'e' symbol in the end.
     let result = [];
     let rest = data.slice(1); // l...
@@ -158,7 +158,7 @@ export function decodeList(data: Buffer): DecodingResult {
     return {value: result, rest: rest};
 }
 
-export function decodeDict(data: Buffer): DecodingResult {
+function decodeDict(data: Buffer): DecodingResult {
     let result = {};
     let rest = data.slice(1); // d...
     let value = null;
