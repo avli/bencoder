@@ -30,6 +30,9 @@ describe('bencoder', () => {
         it('should encode [{d1: {a: 1}}, {d2: {b: 2}}] to "ld2:d1d1:ai1eed2:d2d1:bi2eeee"', () => {
             assert.equal("ld2:d1d1:ai1eeed2:d2d1:bi2eeee", bencoder.encode([{d1: {a: 1}}, {d2: {b: 2}}]).toString());
         });
+        it('should encode {foo: [1, 2, 3], bar: 42, baz: "foobarbaz"} to "d3:bari42e3:baz9:foobarbaz3:fooli1ei2ei3eee"', () => {
+            assert.deepEqual("d3:bari42e3:baz9:foobarbaz3:fooli1ei2ei3eee", bencoder.encode({foo: [1, 2, 3], bar: 42, baz: "foobarbaz"}).toString());
+        });
     });
 
     describe('#decode()', () => {

@@ -31,12 +31,6 @@ function encodeDict(d) {
     result.push(buffer_1.Buffer.from('e'));
     return buffer_1.Buffer.concat(result);
 }
-function isArray(obj) {
-    if (typeof obj === 'object') {
-        return obj.constructor === Array ? true : false;
-    }
-    return false;
-}
 function _encode(data) {
     switch (typeof data) {
         case 'string':
@@ -44,7 +38,7 @@ function _encode(data) {
         case 'number':
             return encodeInteger(data);
         case 'object':
-            if (isArray(data)) {
+            if (Array.isArray(data)) {
                 return encodeArray(data);
             }
             else {
@@ -81,21 +75,13 @@ function decodeString(data, encoding) {
             break;
         }
     }
-    // TODO: Make the message more meaningful.
     if (!firstColonIndex) {
-        throw "Invalid data. Missing colon.";
+        throw new Error("Error while decoding " + data.toString() + ". Missing colon.");
     }
     var expectedLength = parseInt(data.slice(0, firstColonIndex).toString());
     var value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
-    // TODO: Make the message more meaningful.
-    if (expectedLength !== value.length) {
-        throw "Invalid data. String length is not equal the expected one.";
-    }
-    else {
-        return { value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength) };
-    }
+    return { value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength) };
 }
-exports.decodeString = decodeString;
 function decodeInteger(data) {
     var endIndex = null; // The first 'e' symbol index
     for (var i = 1; i < data.length; i++) {
@@ -105,49 +91,50 @@ function decodeInteger(data) {
         }
     }
     if (!endIndex) {
-        throw "Invalid data. 'e' symbol expected";
+        throw new Error("Invalid data. 'e' symbol expected");
     }
     return {
         value: parseInt(data.slice(1, endIndex).toString()),
         rest: data.slice(endIndex + 1)
     };
 }
-exports.decodeInteger = decodeInteger;
 function decodeList(data) {
     // TODO: Check for 'e' symbol in the end.
     var result = [];
     var rest = data.slice(1); // l...
     var value = null;
-    while (rest) {
+    while (true) {
         var firstByte = rest[0];
         if (firstByte === Delimeters.i) {
             (_a = decodeInteger(rest), value = _a.value, rest = _a.rest, _a);
             result.push(value);
+            continue;
         }
         if (encodesDigit(firstByte)) {
             (_b = decodeString(rest), value = _b.value, rest = _b.rest, _b);
             result.push(value);
+            continue;
         }
         if (firstByte === Delimeters.l) {
             (_c = decodeList(rest), value = _c.value, rest = _c.rest, _c);
             result.push(value);
+            continue;
         }
         if (firstByte === Delimeters.e) {
             rest = rest.slice(1);
             break;
         }
+        throw new Error("Expected d, i, l or digit, got " + rest.toString());
     }
     return { value: result, rest: rest };
     var _a, _b, _c;
 }
-exports.decodeList = decodeList;
 function decodeDict(data) {
     var result = {};
     var rest = data.slice(1); // d...
     var value = null;
     var key;
     while (rest.length !== 0) {
-        console.log(rest.toString());
         var firstByte = rest[0];
         if (firstByte === Delimeters.e) {
             rest = rest.slice(1);
@@ -160,7 +147,6 @@ function decodeDict(data) {
     return { value: result, rest: rest };
     var _a, _b;
 }
-exports.decodeDict = decodeDict;
 function encodesDigit(x) {
     return (x >= 0x30) && (x <= 0x39);
 }
@@ -171,7 +157,7 @@ function _decode(data) {
     if (firstByte === Delimeters.i) {
         return decodeInteger(data);
     }
-    if (encodesDigit(firstByte)) {
+    else if (encodesDigit(firstByte)) {
         return decodeString(data);
     }
     else if (firstByte === Delimeters.l) {
@@ -179,6 +165,9 @@ function _decode(data) {
     }
     else if (firstByte === Delimeters.d) {
         return decodeDict(data);
+    }
+    else {
+        throw new Error("Expected d, i, l or digit, got \"" + data.toString() + "\"");
     }
 }
 /**
@@ -189,7 +178,14 @@ function _decode(data) {
  * @return {Object|Array|String|Number}
  */
 function decode(data, encoding) {
-    return _decode(data).value;
+    var value;
+    var rest;
+    (_a = _decode(data), value = _a.value, rest = _a.rest, _a);
+    if (rest.length) {
+        throw new Error("Unexpected continuation: \"" + rest.toString() + "\"");
+    }
+    return value;
+    var _a;
 }
 exports.decode = decode;
 //# sourceMappingURL=bencoder.js.map
