@@ -100,17 +100,16 @@ export function decodeString(data: Buffer, encoding?: string): DecodingResult {
 
     // TODO: Make the message more meaningful.
     if (!firstColonIndex) {
-        throw "Invalid data. Missing colon.";
+        throw new Error(`Error while decoding ${data.toString()}. Missing colon.`);
     }
 
     let expectedLength = parseInt(data.slice(0,firstColonIndex).toString());
-    let value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
 
-    // TODO: Make the message more meaningful.
-    if (expectedLength !== value.length) {
-        throw "Invalid data. String length is not equal the expected one.";
+    if (expectedLength !== data.slice(firstColonIndex + 1).length) {
+        throw new Error(`Error while decoding "${data.toString()}". String length should be ${expectedLength}, actual length is ${data.slice(firstColonIndex + 1).length}.`);
     }
     else {
+        let value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
         return {value: value.toString(encoding), rest: data.slice(firstColonIndex + 1 + expectedLength)}
     }
 }

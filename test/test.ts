@@ -31,16 +31,26 @@ describe('bencoder', () => {
             assert.equal("ld2:d1d1:ai1eeed2:d2d1:bi2eeee", bencoder.encode([{d1: {a: 1}}, {d2: {b: 2}}]).toString());
         });
     });
+
     describe('#decode()', () => {
         it('should dencode "3:foo" to "foo"', () => {
             assert.equal('foo', bencoder.decode(Buffer.from('3:foo')).toString());
         });
-        // it('should raise exception when decoding "3:foobar"', () => {
-        //     assert.throws(() => {
-        //         bencoder.decode(Buffer.from('3:foobar')).toString()
-        //     }, 
-        //     Error);
-        // });
+        it('should raise exception when decoding "3:foobar"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from('3:foobar'))
+            }, 
+            Error);
+        });
     });
+
+    describe('#decodeString()', () => {
+        it('should raise exception when decoding "3foo"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from('3foo'))
+            }, 
+            Error);
+        });
+    })
 })
 
