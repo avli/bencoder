@@ -42,12 +42,24 @@ describe('bencoder', () => {
             }, 
             Error);
         });
+        // it('should decode "li1ei2e5:threee" to [1, 2, "three"]', () => {
+        //     assert.equal([1, 2, "three"], bencoder.decode(Buffer.from("li1ei2e5:threee")));
+        // })
     });
 
     describe('#decodeString()', () => {
         it('should raise exception when decoding "3foo"', () => {
             assert.throws(() => {
                 bencoder.decode(Buffer.from('3foo'))
+            }, 
+            Error);
+        });
+    })
+
+    describe('#decodeInteger()', () => {
+        it('should raise exception when decoding "i42"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from('i42'))
             }, 
             Error);
         });

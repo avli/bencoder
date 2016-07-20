@@ -124,7 +124,7 @@ export function decodeInteger(data: Buffer): DecodingResult {
     }
 
     if (!endIndex) {
-        throw "Invalid data. 'e' symbol expected";
+        throw new Error("Invalid data. 'e' symbol expected");
     }
 
     return {
