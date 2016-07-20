@@ -52,6 +52,21 @@ describe('bencoder', () => {
                 bencoder.decode(Buffer.from("li42e"))
             });
         });
+        it('should decode "d1:ai1e3:fooi42e" to {a: 1, foo: 42}', () => {
+            assert.deepEqual({a: 1, 'foo': 42}, bencoder.decode(Buffer.from("d1:ai1e3:fooi42e")))
+        });
+        it('should decode "d3:food3:bar3:bazee" to {foo: {bar: "baz"}}', () => {
+            assert.deepEqual({foo: {bar: "baz"}}, bencoder.decode(Buffer.from("d3:food3:bar3:bazee")))
+        })
+        it('it should raise exception when decoding "d3:food3bar3:bazee"', () => {
+            assert.throws(() => {
+                bencoder.decode(Buffer.from("d3:food3bar3:bazee"))
+            },
+            (err) => {
+                assert.equal(err.message, "Expected d, i, l or digit, got \"ee\"");
+                return true;
+            });
+        });
     });
 
     describe('#decodeString()', () => {

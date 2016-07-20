@@ -165,7 +165,6 @@ export function decodeDict(data: Buffer): DecodingResult {
     let key: string;
 
     while (rest.length !== 0) {
-        console.log(rest.toString());
         let firstByte = rest[0];
         if (firstByte === Delimeters.e) {
             rest = rest.slice(1);
@@ -190,7 +189,7 @@ function _decode(data: Buffer): any {
     if (firstByte === Delimeters.i) {
         return decodeInteger(data);
     }
-    if (encodesDigit(firstByte)) {
+    else if (encodesDigit(firstByte)) {
         return decodeString(data);
     }
     else if (firstByte === Delimeters.l) {
@@ -198,6 +197,9 @@ function _decode(data: Buffer): any {
     }
     else if (firstByte === Delimeters.d) {
         return decodeDict(data);
+    }
+    else {
+        throw new Error(`Expected d, i, l or digit, got "${data.toString()}"`);
     }
 }
 
