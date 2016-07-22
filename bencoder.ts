@@ -142,6 +142,11 @@ function decodeList(data: Buffer): DecodingResult {
             result.push(value);
             continue;
         }
+        if (firstByte === Delimeters.d) {
+            ({value, rest} = decodeDict(rest));
+            result.push(value);
+            continue;
+        }
         if (firstByte === Delimeters.e) { // end of the list
             rest = rest.slice(1);
             break;

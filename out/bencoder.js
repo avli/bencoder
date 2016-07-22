@@ -120,6 +120,11 @@ function decodeList(data) {
             result.push(value);
             continue;
         }
+        if (firstByte === Delimeters.d) {
+            (_d = decodeDict(rest), value = _d.value, rest = _d.rest, _d);
+            result.push(value);
+            continue;
+        }
         if (firstByte === Delimeters.e) {
             rest = rest.slice(1);
             break;
@@ -127,7 +132,7 @@ function decodeList(data) {
         throw new Error("Expected d, i, l or digit, got " + rest.toString());
     }
     return { value: result, rest: rest };
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
 }
 function decodeDict(data) {
     var result = {};
