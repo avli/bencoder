@@ -72,6 +72,9 @@ describe('bencoder', function () {
                 bencoder.decode(buffer_1.Buffer.from('3foo'));
             }, Error);
         });
+        it('should return "привет" when decoding "12:привет"', function () {
+            assert.equal("привет", bencoder.decode(buffer_1.Buffer.from("12:привет"), 'utf8'));
+        });
     });
     describe('#decodeInteger()', function () {
         it('should raise exception when decoding "i42"', function () {

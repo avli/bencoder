@@ -79,6 +79,9 @@ describe('bencoder', () => {
             }, 
             Error);
         });
+        it('should return "привет" when decoding "12:привет"', () => {
+            assert.equal("привет", bencoder.decode(Buffer.from("12:привет"), 'utf8'));
+        })
     })
 
     describe('#decodeInteger()', () => {

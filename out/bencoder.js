@@ -76,7 +76,7 @@ function decodeString(data, encoding) {
         }
     }
     if (!firstColonIndex) {
-        throw new Error("Error while decoding " + data.toString() + ". Missing colon.");
+        throw new Error("Error while decoding " + data.toString(encoding) + ". Missing colon.");
     }
     var expectedLength = parseInt(data.slice(0, firstColonIndex).toString());
     var value = data.slice(firstColonIndex + 1, firstColonIndex + 1 + expectedLength);
@@ -98,7 +98,7 @@ function decodeInteger(data) {
         rest: data.slice(endIndex + 1)
     };
 }
-function decodeList(data) {
+function decodeList(data, encoding) {
     // TODO: Check for 'e' symbol in the end.
     var result = [];
     var rest = data.slice(1); // l...
@@ -111,17 +111,17 @@ function decodeList(data) {
             continue;
         }
         if (encodesDigit(firstByte)) {
-            (_b = decodeString(rest), value = _b.value, rest = _b.rest, _b);
+            (_b = decodeString(rest, encoding), value = _b.value, rest = _b.rest, _b);
             result.push(value);
             continue;
         }
         if (firstByte === Delimeters.l) {
-            (_c = decodeList(rest), value = _c.value, rest = _c.rest, _c);
+            (_c = decodeList(rest, encoding), value = _c.value, rest = _c.rest, _c);
             result.push(value);
             continue;
         }
         if (firstByte === Delimeters.d) {
-            (_d = decodeDict(rest), value = _d.value, rest = _d.rest, _d);
+            (_d = decodeDict(rest, encoding), value = _d.value, rest = _d.rest, _d);
             result.push(value);
             continue;
         }
@@ -129,12 +129,12 @@ function decodeList(data) {
             rest = rest.slice(1);
             break;
         }
-        throw new Error("Expected d, i, l or digit, got " + rest.toString());
+        throw new Error("Expected d, i, l or digit, got " + rest.toString(encoding));
     }
     return { value: result, rest: rest };
     var _a, _b, _c, _d;
 }
-function decodeDict(data) {
+function decodeDict(data, encoding) {
     var result = {};
     var rest = data.slice(1); // d...
     var value = null;
@@ -145,8 +145,8 @@ function decodeDict(data) {
             rest = rest.slice(1);
             break;
         }
-        (_a = decodeString(rest), key = _a.value, rest = _a.rest, _a);
-        (_b = _decode(rest), value = _b.value, rest = _b.rest, _b);
+        (_a = decodeString(rest, encoding), key = _a.value, rest = _a.rest, _a);
+        (_b = _decode(rest, encoding), value = _b.value, rest = _b.rest, _b);
         result[key] = value;
     }
     return { value: result, rest: rest };
@@ -155,7 +155,7 @@ function decodeDict(data) {
 function encodesDigit(x) {
     return (x >= 0x30) && (x <= 0x39);
 }
-function _decode(data) {
+function _decode(data, encoding) {
     var value = null;
     var rest = null;
     var firstByte = data[0];
@@ -163,13 +163,13 @@ function _decode(data) {
         return decodeInteger(data);
     }
     else if (encodesDigit(firstByte)) {
-        return decodeString(data);
+        return decodeString(data, encoding);
     }
     else if (firstByte === Delimeters.l) {
-        return decodeList(data);
+        return decodeList(data, encoding);
     }
     else if (firstByte === Delimeters.d) {
-        return decodeDict(data);
+        return decodeDict(data, encoding);
     }
     else {
         throw new Error("Expected d, i, l or digit, got \"" + data.toString() + "\"");
@@ -185,7 +185,7 @@ function _decode(data) {
 function decode(data, encoding) {
     var value;
     var rest;
-    (_a = _decode(data), value = _a.value, rest = _a.rest, _a);
+    (_a = _decode(data, encoding), value = _a.value, rest = _a.rest, _a);
     if (rest.length) {
         throw new Error("Unexpected continuation: \"" + rest.toString() + "\"");
     }

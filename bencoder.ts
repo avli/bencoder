@@ -92,7 +92,7 @@ function decodeString(data: Buffer, encoding?: string): DecodingResult {
     }
 
     if (!firstColonIndex) {
-        throw new Error(`Error while decoding ${data.toString()}. Missing colon.`);
+        throw new Error(`Error while decoding ${data.toString(encoding)}. Missing colon.`);
     }
 
     let expectedLength = parseInt(data.slice(0,firstColonIndex).toString());
@@ -119,7 +119,7 @@ function decodeInteger(data: Buffer): DecodingResult {
     }
 }
 
-function decodeList(data: Buffer): DecodingResult {
+function decodeList(data: Buffer, encoding?: string): DecodingResult {
     // TODO: Check for 'e' symbol in the end.
     let result = [];
     let rest = data.slice(1); // l...
@@ -133,17 +133,17 @@ function decodeList(data: Buffer): DecodingResult {
             continue;
         }
         if (encodesDigit(firstByte)) {
-            ({value, rest} = decodeString(rest));
+            ({value, rest} = decodeString(rest, encoding));
             result.push(value);
             continue;
         }
         if (firstByte === Delimeters.l) {
-            ({value, rest} = decodeList(rest));
+            ({value, rest} = decodeList(rest, encoding));
             result.push(value);
             continue;
         }
         if (firstByte === Delimeters.d) {
-            ({value, rest} = decodeDict(rest));
+            ({value, rest} = decodeDict(rest, encoding));
             result.push(value);
             continue;
         }
@@ -151,12 +151,12 @@ function decodeList(data: Buffer): DecodingResult {
             rest = rest.slice(1);
             break;
         }
-        throw new Error(`Expected d, i, l or digit, got ${rest.toString()}`)
+        throw new Error(`Expected d, i, l or digit, got ${rest.toString(encoding)}`)
     }
     return {value: result, rest: rest};
 }
 
-function decodeDict(data: Buffer): DecodingResult {
+function decodeDict(data: Buffer, encoding?: string): DecodingResult {
     let result = {};
     let rest = data.slice(1); // d...
     let value = null;
@@ -168,8 +168,8 @@ function decodeDict(data: Buffer): DecodingResult {
             rest = rest.slice(1);
             break;
         }
-        ({value: key, rest} = decodeString(rest));
-        ({value, rest} = _decode(rest));
+        ({value: key, rest} = decodeString(rest, encoding));
+        ({value, rest} = _decode(rest, encoding));
         result[key] = value;
     }
 
@@ -180,7 +180,7 @@ function encodesDigit(x: number) {
     return (x >= 0x30) && (x <= 0x39);
 }
 
-function _decode(data: Buffer): any {
+function _decode(data: Buffer, encoding?: string): any {
     let value = null;
     let rest = null;
     let firstByte = data[0];
@@ -188,13 +188,13 @@ function _decode(data: Buffer): any {
         return decodeInteger(data);
     }
     else if (encodesDigit(firstByte)) {
-        return decodeString(data);
+        return decodeString(data, encoding);
     }
     else if (firstByte === Delimeters.l) {
-        return decodeList(data);
+        return decodeList(data, encoding);
     }
     else if (firstByte === Delimeters.d) {
-        return decodeDict(data);
+        return decodeDict(data, encoding);
     }
     else {
         throw new Error(`Expected d, i, l or digit, got "${data.toString()}"`);
@@ -211,7 +211,7 @@ function _decode(data: Buffer): any {
 export function decode(data: Buffer, encoding?: string): any {
     let value: string;
     let rest: Buffer
-    ({value, rest} = _decode(data));
+    ({value, rest} = _decode(data, encoding));
     if (rest.length) {
         throw new Error(`Unexpected continuation: "${rest.toString()}"`)
     }
