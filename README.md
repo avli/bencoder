@@ -36,5 +36,16 @@ Bencoder.decode(x2)
 Bencoder.decode(x3)
 { bar: 42, baz: 'foobarbaz', foo: [ 1, 2, 3 ] }
 
+// A few words about encodings
+// By default bencoder assumes everything is UTF-8. For example
+
+var x4 = Bencoder.encode('привет')
+Bencoder.decode(x4) // which is the same as Bencoder.decode(x4, 'utf8')
+'привет'
+
+// Or you can specify another encoding, if you want to
+Bencoder.decode(x4, 'ascii')
+'P?Q\u0000P8P2P5Q\u0002' 
+
 ```
 
