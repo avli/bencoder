@@ -1,8 +1,9 @@
 {
   "name": "bencoder",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "bencode encoder/decoder written in TypeScript",
   "main": "./out/bencoder.js",
+  "typings": "./bencoder.d.ts",
   "scripts": {
     "pretest": "tsc",
     "test": "mocha ./out/test"
