@@ -4,5 +4,10 @@
         "module": "commonjs",
         "sourceMap": true,
         "outDir": "./out"
-    }
+    },
+    "files": [
+	"bencoder.ts",
+	"typings/index.d.ts",
+	"test/test.ts"
+    ]
 }

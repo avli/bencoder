@@ -4,7 +4,7 @@
   "description": "bencode encoder/decoder written in TypeScript",
   "main": "./out/bencoder.js",
   "scripts": {
-    "pretest": "tsc -p .",
+    "pretest": "tsc",
     "test": "mocha ./out/test"
   },
   "keywords": [
